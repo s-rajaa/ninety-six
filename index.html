@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>96 — ஒரு நினைவின் பயணம்</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Noto+Serif+Tamil:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070709;
+      --bg-surface: #0e0e12;
+      --bg-surface-elevated: #16161c;
+      --text: #e5dfd5;
+      --text-muted: #958c82;
+      --gold: #d4af37;
+      --gold-dim: rgba(212, 175, 55, 0.2);
+      --gold-glow: rgba(212, 175, 55, 0.4);
+      --border: rgba(212, 175, 55, 0.15);
+      --font-base: 1.15rem;
+      --transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    [data-theme="warm"] {
+      --bg: #0c0a08;
+      --bg-surface: #14110d;
+      --bg-surface-elevated: #1e1913;
+      --text: #ecdcc9;
+      --text-muted: #a69480;
+      --gold: #dfb15b;
+      --gold-dim: rgba(223, 177, 91, 0.25);
+      --gold-glow: rgba(223, 177, 91, 0.5);
+      --border: rgba(223, 177, 91, 0.2);
+    }
+
+    [data-theme="midnight"] {
+      --bg: #05080f;
+      --bg-surface: #0a101d;
+      --bg-surface-elevated: #10182b;
+      --text: #d8e2f0;
+      --text-muted: #7e8fa6;
+      --gold: #c9ab67;
+      --gold-dim: rgba(201, 171, 103, 0.2);
+      --gold-glow: rgba(201, 171, 103, 0.4);
+      --border: rgba(201, 171, 103, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      background-color: var(--bg);
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: var(--font-base);
+      line-height: 2.1;
+      overflow-x: hidden;
+      width: 100%;
+      position: relative;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    canvas#dustCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.6;
+    }
+
+    .film-grain {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Top Sticky Bar */
+    header.site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(7, 7, 9, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .progress-bar-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #b8860b, var(--gold));
+      box-shadow: 0 0 8px var(--gold-glow);
+      transition: width 0.1s ease;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-text {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-shadow: 0 0 15px var(--gold-glow);
+      line-height: 1;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.2rem 0.5rem;
+      gap: 0.35rem;
+    }
+
+    .ctrl-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .ctrl-btn:hover {
+      color: var(--gold);
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .ctrl-divider {
+      width: 1px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .theme-toggle-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.45rem 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 12px var(--gold-dim);
+    }
+
+    /* Hero Section */
+    section.hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      z-index: 2;
+      width: 100%;
+    }
+
+    .hero-pretitle {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      letter-spacing: 6px;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      opacity: 0.85;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(5rem, 15vw, 11rem);
+      font-weight: 800;
+      letter-spacing: 4px;
+      line-height: 0.95;
+      background: linear-gradient(180deg, #ffffff 10%, #d4af37 60%, #5a4511 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 35px rgba(212, 175, 55, 0.35));
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-subtitle {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+      font-weight: 300;
+      color: #ede4d8;
+      letter-spacing: 2px;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-years {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 5px;
+      color: var(--text-muted);
+      margin-bottom: 2.2rem;
+    }
+
+    .hero-summary {
+      max-width: 680px;
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 2.2;
+      margin-bottom: 3rem;
+    }
+
+    .scroll-down-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--gold);
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: 1.05rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .scroll-down-btn:hover {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      transform: translateY(-3px);
+    }
+
+    /* Story Layout */
+    .story-container {
+      position: relative;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 8rem;
+      z-index: 2;
+    }
+
+    .chapter-block {
+      position: relative;
+      margin-bottom: 7rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .chapter-block.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .chapter-header {
+      margin-bottom: 1.8rem;
+    }
+
+    .chapter-number {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+      display: block;
+      opacity: 0.9;
+    }
+
+    .chapter-title {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: clamp(1.7rem, 4vw, 2.5rem);
+      font-weight: 600;
+      line-height: 1.35;
+      color: #fff;
+    }
+
+    /* Cinematic Media */
+    .cinematic-media {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 2rem 0;
+      background-color: var(--bg-surface);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cinematic-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.05) brightness(0.92);
+      transition: transform 0.8s ease, filter 0.8s ease;
+      display: block;
+    }
+
+    .cinematic-media:hover img {
+      transform: scale(1.02);
+      filter: contrast(1.08) brightness(1);
+    }
+
+    .image-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, var(--bg-surface-elevated), var(--bg-surface));
+      border: 1px dashed rgba(212, 175, 55, 0.3);
+      color: var(--text-muted);
+      text-align: center;
+      padding: 1.5rem;
+      z-index: 1;
+    }
+
+    .image-placeholder svg {
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .image-placeholder .ph-title {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+
+    .image-placeholder .ph-sub {
+      font-family: 'Cinzel', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+      opacity: 0.85;
+    }
+
+    .media-caption {
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-top: -1.2rem;
+      margin-bottom: 2rem;
+      display: block;
+      border-left: 2px solid var(--gold-dim);
+      padding-left: 0.8rem;
+    }
+
+    .story-prose {
+      font-size: var(--font-base);
+      line-height: 2.15;
+      color: var(--text);
+      font-weight: 300;
+      text-align: justify;
+    }
+
+    .story-prose p {
+      margin-bottom: 1.6rem;
+    }
+
+    .story-prose p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Ambient Lighting */
+    .chapter-block[data-tone="warm"]::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 75%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .chapter-block[data-tone="night"]::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(40, 70, 120, 0.08) 0%, transparent 75%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Epilogue */
+    section.epilogue {
+      position: relative;
+      text-align: center;
+      padding: 6rem 1.5rem 8rem;
+      z-index: 2;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: linear-gradient(180deg, transparent 0%, #030304 100%);
+      width: 100%;
+    }
+
+    .epilogue-title {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      line-height: 1.4;
+      color: #fff;
+      margin-bottom: 1.8rem;
+    }
+
+    .epilogue-prose {
+      max-width: 680px;
+      margin: 0 auto 3rem;
+      font-size: 1.15rem;
+      line-height: 2.2;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .final-signature {
+      font-family: 'Cinzel', serif;
+      font-size: 2.2rem;
+      letter-spacing: 12px;
+      color: var(--gold);
+      text-shadow: 0 0 25px var(--gold-glow);
+    }
+
+    /* Floating Back to Top Button */
+    .back-to-top {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 900;
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Precision Mobile Overrides */
+    @media (max-width: 768px) {
+      header.site-header {
+        padding: 0.6rem 1rem;
+      }
+      .logo-text {
+        font-size: 1.7rem;
+      }
+      .header-controls {
+        gap: 0.4rem;
+      }
+      .ctrl-pill {
+        padding: 0.15rem 0.35rem;
+      }
+      .ctrl-btn {
+        padding: 0.2rem 0.3rem;
+        font-size: 0.8rem;
+      }
+      .theme-toggle-btn {
+        padding: 0.4rem 0.65rem;
+      }
+      .story-container {
+        padding: 1rem 1rem 6rem;
+      }
+      .cinematic-media {
+        height: 260px;
+        margin: 1.5rem 0;
+      }
+      .chapter-block {
+        margin-bottom: 5rem;
+      }
+      .chapter-title {
+        font-size: 1.6rem;
+      }
+      .story-prose {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="film-grain"></div>
+  <canvas id="dustCanvas"></canvas>
+
+  <!-- Background Audio Element -->
+  <audio id="bgSong" preload="auto"></audio>
+
+  <!-- Sticky Minimal Top Navigation -->
+  <header class="site-header">
+    <a href="#" class="brand" title="96">
+      <span class="logo-text">96</span>
+    </a>
+
+    <div class="header-controls">
+      <!-- Font Size Controller -->
+      <div class="ctrl-pill">
+        <button class="ctrl-btn" id="btnFontDec" aria-label="Decrease font size">A−</button>
+        <div class="ctrl-divider"></div>
+        <button class="ctrl-btn" id="btnFontInc" aria-label="Increase font size">A+</button>
+      </div>
+
+      <!-- Brightness / Theme Toggle -->
+      <button class="theme-toggle-btn" id="btnThemeToggle" aria-label="Toggle Brightness">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Reading Progress Indicator -->
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="hero-pretitle">A Film By C. Prem Kumar</div>
+    <h1 class="hero-title">96</h1>
+    <h2 class="hero-subtitle">ஒரு நினைவின் பயணம்</h2>
+    <div class="hero-years">1996 — 2018</div>
+    <p class="hero-summary">
+      காலத்தின் புழுதி படிந்த பக்கங்களிலிருந்து மீட்கப்பட்ட இரு இதயங்களின் அமைதியான காவியம். சொல்லப்படாத சொற்களும், விடைபெறாத நேசமும் ஒரு இரவின் மடியில் மீண்டும் துளிர்க்கும் நெகிழ்ச்சியான கதைப்பயணம்.
+    </p>
+    <a href="#story" class="scroll-down-btn">
+      <span>கதையைப் படிக்க</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <polyline points="19 12 12 19 5 12"></polyline>
+      </svg>
+    </a>
+  </section>
+
+  <!-- Continuous Story Stream -->
+  <main class="story-container" id="story">
+
+    <!-- 01 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">01</span>
+        <h3 class="chapter-title">ராமின் பயணம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img1.jpg</div>
+        </div>
+        <img src="img1.png" alt="ராமின் பயணம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">நாடோடிப் பறவையின் கேமரா வழியே விரியும் உலகம்.</span>
+      <div class="story-prose">
+        <p>ராமச்சந்திரன் ஒரு வனவிலங்கு மற்றும் பயணப் புகைப்படக் கலைஞர். அவனது உலகம் எல்லையற்றது; தனிமையும் அமைதியும் கலந்த இயற்கை வெளிகளில் அவன் கேமரா கண்கள் எப்போதும் அலைபாய்ந்து கொண்டிருக்கும். ஆனால் தன் நெஞ்சின் ஆழத்தில் புதைந்து கிடக்கும் ஒரு பால்ய நினைவை மட்டும் அவனால் நிழற்படமாக்கவே முடியவில்லை.</p>
+        <p>மாணவர்களுக்குப் புகைப்படக் கலை பயிற்றுவிக்கும் பயணத்தின் நடுவே, தஞ்சாவூர் நெடுஞ்சாலையைக் கடக்கும்போது, அவனது மனதிற்குள் அறியாத ஒரு நடுக்கம் படர்கிறது. அங்கே இருக்கும் மைல்கல் அவனது பால்யத்தின் கதவுகளைத் திறக்கக் காத்திருந்தது.</p>
+      </div>
+    </article>
+
+    <!-- 02 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">02</span>
+        <h3 class="chapter-title">பள்ளியின் கதவுகள்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img2.jpg</div>
+        </div>
+        <img src="img2.png" alt="பள்ளியின் கதவுகள்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">இருபத்திரண்டு ஆண்டுகளின் தூசியைச் சுமந்த வகுப்பறைகள்.</span>
+      <div class="story-prose">
+        <p>பட்டுக்கோட்டை அரசு மேல்நிலைப் பள்ளி. இருபத்திரண்டு ஆண்டுகளுக்கு முன்பு அவன் தன் வாழ்வின் வசந்தத்தை விட்டுச்சென்ற இடம். அந்தப் பழமையான இரும்பு கேட்டைத் தொடும்போது, காலம் அவனைப் பின்னோக்கி இழுத்துச் செல்கிறது.</p>
+        <p>அமைதியாகக் கிடக்கும் வராந்தாக்களில் அவனது காலடி ஓசைகள் எதிரொலிக்கின்றன. பழைய மர பெஞ்சுகளின் மீது படிந்திருக்கும் தூசியை விரல்களால் துடைக்கிறான். அங்கு சுவர்களில் படிந்திருக்கும் நினைவுகளின் மணம் மாறாமல் அப்படியே இருந்தது.</p>
+      </div>
+    </article>
+
+    <!-- 03 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">03</span>
+        <h3 class="chapter-title">1996-ன் நினைவலைகள்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img3.jpg</div>
+        </div>
+        <img src="img3.png" alt="1996-ன் நினைவலைகள்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">பத்தாம் வகுப்பின் சலசலப்பும், ஜானகியின் குரலும்.</span>
+      <div class="story-prose">
+        <p>1996-ஆம் ஆண்டு. பத்தாம் வகுப்பு 'சி' பிரிவு. முன்வரிசையில் அமர்ந்திருக்கும் ஒரு பெண்—ஜானகி தேவி. அவளது கண்கள் விரிந்து பேசும் அழகும், கூந்தலில் சூடிய ஒற்றை மல்லிகையும் ராமின் கண்களை எப்போதுமே கட்டிப்போட்டிருந்தன.</p>
+        <p>ஜானு பாடும் குரல் அந்தப் பள்ளி வளாகத்தையே மயக்கும். எஸ். ஜானகியின் இனிமையான பாடல்களை அவள் பாடும்போதெல்லாம் வகுப்பறையின் காற்று முழுவதும் அமுதமாக மாறும். ராம் அவளை தூரத்திலிருந்தே பார்த்துக் கொண்டிருப்பான்; ஒரு வார்த்தை பேசிவிடத் துடிக்கும் உதடுகள் அமைதியையே தஞ்சம் புகும்.</p>
+      </div>
+    </article>
+
+    <!-- 04 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">04</span>
+        <h3 class="chapter-title">மௌனத்தின் மொழி</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img4.jpg</div>
+        </div>
+        <img src="img4.png" alt="மௌனத்தின் மொழி" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">சொற்களற்ற பார்வைகளில் துளிர்த்த தூய காதல்.</span>
+      <div class="story-prose">
+        <p>அவர்கள் இருவரும் நேரடியாகப் பேசிக்கொண்டதே இல்லை. ஆனால், பார்வைகளால் ஒரு தனி உலகத்தை நெய்திருந்தார்கள். சைக்கிள் ஸ்டாண்டில் அவள் சைக்கிளை எடுக்கும் நொடிகள், வகுப்பறைக் கதவோரம் அவள் வந்து நிற்கும் தருணங்கள் என எல்லாமே ராமுக்குக் கவிதை.</p>
+        <p>ஜானுவுக்கும் ராமின் அந்த அமைதியான காதல் புரிந்தே இருந்தது. அவள் அவனைப் பார்க்கும் ஒவ்வொரு மெல்லிய பார்வையும், 'உன்னை எனக்குத் தெரியும்' என்று சொல்லாமல் சொல்லிச் செல்லும்.</p>
+      </div>
+    </article>
+
+    <!-- 05 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">05</span>
+        <h3 class="chapter-title">திடீர் பிரிவு</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img5.jpg</div>
+        </div>
+        <img src="img5.png" alt="திடீர் பிரிவு" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">சொல்லாமல் போன ஒரு விடைபெறல்.</span>
+      <div class="story-prose">
+        <p>பத்தாம் வகுப்புப் பொதுத்தேர்வுகள் முடிந்த கோடைக்காலத்தில் விதி குறுக்கிட்டது. ராமின் குடும்பத்தில் ஏற்பட்ட கடுமையான நிதி நெருக்கடியால், அவர்கள் ஒரே இரவில் சென்னைக்கு இடம்பெயர நேர்ந்தது.</p>
+        <p>ஜானுவிடம் ஒரு வார்த்தை கூட சொல்ல முடியவில்லை. கடைசியாக அவளது வீட்டின் தெருமுனையில் நின்றுகொண்டு இருண்ட ஜன்னலை வெறித்துப் பார்த்த ராமின் கண்கள் கண்ணீரில் மிதந்தன. எந்தப் பிரியாவிடையும் இன்றி காலம் அவர்களைப் பிரித்தது.</p>
+      </div>
+    </article>
+
+    <!-- 06 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">06</span>
+        <h3 class="chapter-title">தேடலும் ஏமாற்றமும்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img6.jpg</div>
+        </div>
+        <img src="img6.png" alt="தேடலும் ஏமாற்றமும்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">காலத்தின் புயலில் தொலைந்துபோன முகவரிகள்.</span>
+      <div class="story-prose">
+        <p>பள்ளி திறந்தபோது ஜானுவின் இதயம் உடைந்து போனது. ராமின் காலியான இருக்கை பெரும் பாரமாக மாறியது. அவன் எங்கே போனான், ஏன் போனான் என்று எவருக்குமே தெரியவில்லை.</p>
+        <p>பல வருடங்கள் கழித்து ராம் கல்லூரி நாட்களில் அவளைத் தேடிச் சென்றான். ஆனால் முகவரிகள் மாறியிருந்தன, மனிதர்கள் இடம் பெயர்ந்திருந்தனர். இருள் சூழ்ந்த வாழ்க்கையில் நினைவுகள் மட்டுமே மிச்சமிருந்தன.</p>
+      </div>
+    </article>
+
+    <!-- 07 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">07</span>
+        <h3 class="chapter-title">மீண்டும் இணைக்கும் கயிறு</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img7.jpg</div>
+        </div>
+        <img src="img7.png" alt="மீண்டும் இணைக்கும் கயிறு" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">ஒரு வாட்ஸ்அப் குழுவும், உயிர்பெற்ற நட்பும்.</span>
+      <div class="story-prose">
+        <p>பள்ளியை விட்டு வெளியே வந்ததும், தன் பழைய நண்பன் முரளியைத் தொடர்பு கொள்கிறான் ராம். பல ஆண்டுகளுக்குப் பிறகு கேட்கும் அந்த குரல், இருபத்திரண்டு ஆண்டு இடைவெளியை நொடியில் கரைக்கிறது.</p>
+        <p>அன்றிரவே ஒரு வாட்ஸ்அப் குழு உருவாகிறது: '96 Batch - 10th C'. பழைய நண்பர்கள் இணைகிறார்கள். சென்னையில் ஒரு பிரம்மாண்ட மறுசந்திப்பு நடத்த முடிவாகிறது.</p>
+      </div>
+    </article>
+
+    <!-- 08 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">08</span>
+        <h3 class="chapter-title">அந்த ஒரு கேள்வி</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img8.jpg</div>
+        </div>
+        <img src="img8.png" alt="அந்த ஒரு கேள்வி" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">உள்ளுக்குள் வெடிக்கும் எதிர்பார்ப்பின் துடிப்பு.</span>
+      <div class="story-prose">
+        <p>குழுவின் அரட்டைகளில் ராமின் கண்கள் ஒரே ஒரு பெயரை மட்டுமே தேடின. அவனால் நேரடியாகக் கேட்க முடியவில்லை. இறுதியில் நண்பனிடம் கேட்கிறான்: "ஜானு... வருவாளா?".</p>
+        <p>"அவ சிங்கப்பூர்ல இருக்கா, ஆனா ரீயூனியனுக்கு சென்னை வர்றேன்னு சொல்லிட்டா" என்ற பதில் கிடைத்ததும், ராமின் நெஞ்சில் பல வருடங்களாக அடைபட்டுக் கிடந்த சிறகுகள் விரியத் தொடங்குகின்றன.</p>
+      </div>
+    </article>
+
+    <!-- 09 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">09</span>
+        <h3 class="chapter-title">மறுசந்திப்பு மாலை</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img9.jpg</div>
+        </div>
+        <img src="img9.png" alt="மறுசந்திப்பு மாலை" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">சென்னையின் ஓட்டல் கூடத்தில் கூடிய பழைய முகங்கள்.</span>
+      <div class="story-prose">
+        <p>சென்னையின் நட்சத்திர ஓட்டல் அரங்கம். நாற்பது வயதை நெருங்கும் நண்பர்கள் தங்களின் பொறுப்புகளைக் கழற்றி எறிந்துவிட்டு மீண்டும் பள்ளிச் சிறுவர்களாக மாறிச் சிரிக்கிறார்கள்.</p>
+        <p>ராம் ஒரு மூலையில் நின்று பார்க்கிறான்; ஆனால் அவனது உள்மனம் வாயிலையே நோட்டமிடுகிறது. ஒவ்வொரு முறை கதவு திறக்கப்படும்போதும் அவனது இதயத் துடிப்பு எகிறுகிறது.</p>
+      </div>
+    </article>
+
+    <!-- 10 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">10</span>
+        <h3 class="chapter-title">ஜானகியின் வருகை</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img10.jpg</div>
+        </div>
+        <img src="img10.png" alt="ஜானகியின் வருகை" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">மஞ்சள் சுடிதார்... ஒரு வசந்தத்தின் மீள்வருகை.</span>
+      <div class="story-prose">
+        <p>கதவு மெதுவாகத் திறக்கிறது. மஞ்சள் நிற ஆடை, மென் கூந்தல், அதே அமைதியான தோற்றம்—ஜானகி உள்ளே நுழைகிறாள். அரங்கத்தின் சத்தமெல்லாம் அடங்கி உலகம் ஒரு நொடி நின்றுவிடுகிறது.</p>
+        <p>அவள் சிரித்துப் பேசினாலும், அவளது விழிகள் கூட்டத்தின் ஊடே யாரையோ துழாவுகின்றன. தூரத்து நிழலில் அதே அப்பாவித்தனத்துடன் நின்றுகொண்டிருக்கும் ராமச்சந்திரனை அவளது பார்வை தொடுகிறது.</p>
+      </div>
+    </article>
+
+    <!-- 11 -->
+    <article class="chapter-block" data-tone="warm">
+      <div class="chapter-header">
+        <span class="chapter-number">11</span>
+        <h3 class="chapter-title">முதல் பார்வை</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img11.jpg</div>
+        </div>
+        <img src="img11.png" alt="முதல் பார்வை" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">இருபத்திரண்டு ஆண்டுகள் உறைந்திருந்த நொடிகள்.</span>
+      <div class="story-prose">
+        <p>அவள் மெதுவாக அவனை நோக்கி நடக்கிறாள். ராமின் கைகள் நடுங்குகின்றன; நடுக்கத்துடன் கண்களைத் தாழ்த்துகிறான். அவள் அவன் முன்னே வந்து நிற்கிறாள்.</p>
+        <p>"ராம்..." என்று அவள் உச்சரிக்கும் அந்த ஒற்றை வார்த்தையில் இருபத்திரண்டு ஆண்டுகளின் வலி அத்தனையும் வழிகிறது. அந்த முதல் கணத்தில் வார்த்தைகள் தோற்றுப் போய் மௌனம் மட்டுமே ஆள்கிறது.</p>
+      </div>
+    </article>
+
+    <!-- 12 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">12</span>
+        <h3 class="chapter-title">நினைவுகளின் உரையாடல்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img12.jpg</div>
+        </div>
+        <img src="img12.png" alt="நினைவுகளின் உரையாடல்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">உடைபடும் தயக்கங்களும், வெளிப்படும் உண்மைகளும்.</span>
+      <div class="story-prose">
+        <p>நண்பர்களின் சிரிப்பொலிக்கு நடுவே இவர்களின் மௌனம் மெல்ல உடைகிறது. ஜானு அவனருகே அமர்கிறாள். "இன்னும் அதே மாதிரிதான் இருக்கியா ராம்? கொஞ்சம்கூட மாறலையா?"</p>
+        <p>ராம் இன்னும் திருமணம் செய்துகொள்ளவில்லை என்பதை அறியும்போது, ஜானுவின் நெஞ்சில் கணம் தைக்கிறது. அந்தத் தனிமை அவளுக்காகவே வைக்கப்பட்டிருந்த தவம் என்பதை அவள் உணர்கிறாள்.</p>
+      </div>
+    </article>
+
+    <!-- 13 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">13</span>
+        <h3 class="chapter-title">கனத்த உண்மைகள்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img13.jpg</div>
+        </div>
+        <img src="img13.png" alt="கனத்த உண்மைகள்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">தவறிப்போன சந்திப்புகளின் கண்ணீர்த் தடங்கள்.</span>
+      <div class="story-prose">
+        <p>நிகழ்ச்சி முடிந்ததும் மற்றவர்கள் விடைபெறுகிறார்கள். ஜானுவுக்கு மறுநாள் காலை சிங்கப்பூர் செல்லும் விமானம். இடையில் இருப்பது இந்த ஒரே ஓர் இரவு மட்டுமே.</p>
+        <p>காரில் செல்லும்போது, பல வருடங்களுக்கு முன் ராம் அவளது கல்லூரிக்கே வந்து அவளைப் பார்த்ததும், தவறாக நினைத்து விலகிச் சென்றதும் தெரியவருகிறது. "ஏன்டா என்கிட்ட வந்து பேசல?" என்று அழுது கரைகிறாள் ஜானு.</p>
+      </div>
+    </article>
+
+    <!-- 14 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">14</span>
+        <h3 class="chapter-title">இரவின் நகரம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img14.jpg</div>
+        </div>
+        <img src="img14.png" alt="இரவின் நகரம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">தூங்கா நகரத்தின் வீதிகளில் இரண்டு இதயங்கள்.</span>
+      <div class="story-prose">
+        <p>நள்ளிரவு சென்னை. மஞ்சள் தெருவிளக்குகளின் வெளிச்சத்தில் அமைதியாகக் கிடக்கும் சாலைகளில் இருவரும் நடக்கிறார்கள். சாலையோர உணவகத்தில் காபி அருந்துகிறார்கள்.</p>
+        <p>இந்த இரவு முடிந்துவிடக் கூடாது என்ற பேராசை இருவருக்குமே இருந்தது. பேச வேண்டிய வார்த்தைகள் கடலளவாக இருக்க, கடிகார முட்கள் இரக்கமின்றி நகர்ந்தன.</p>
+      </div>
+    </article>
+
+    <!-- 15 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">15</span>
+        <h3 class="chapter-title">அந்தப் பாடல்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img15.jpg</div>
+        </div>
+        <img src="img15.png" alt="அந்தப் பாடல்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">"யமுனை ஆற்றிலே... ஈரக் காற்றிலே..."</span>
+      <div class="story-prose">
+        <p>பள்ளியில் பாதியில் நிறுத்தப்பட்ட 'யமுனை ஆற்றிலே' பாடலை இப்போது பாடச் சொல்கிறான் ராம். அமைதியான தெருவோரத்தில் நின்று ஜானு பாடத் தொடங்குகிறாள்.</p>
+        <p>அந்த நள்ளிரவுக் காற்றில் அவளது குரல் தேனாகப் பாய்கிறது. ராம் கண்களை மூடி இசையில் கரைகிறான்; கன்னங்களில் வழியும் கண்ணீர்த் துளிகள் அந்த இரவின் சாட்சியாகின்றன.</p>
+      </div>
+    </article>
+
+    <!-- 16 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">16</span>
+        <h3 class="chapter-title">ராமின் புகலிடம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img16.jpg</div>
+        </div>
+        <img src="img16.png" alt="ராமின் புகலிடம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">அவனது எளிய வீடும், அவளது பாதங்களும்.</span>
+      <div class="story-prose">
+        <p>அவளைத் தன் வீட்டிற்கு அழைத்து வருகிறான் ராம். எளிய அறை, புகைப்படக் கருவிகள், புத்தகக் குவியல்கள் என அது ஒரு துறவியின் இருப்பிடத்தைப் போல இருந்தது.</p>
+        <p>ஜானு அந்த அறையைச் சுற்றிப் பார்க்கிறாள். அவனது ஒவ்வொரு பொருளிலும் பதிந்திருந்த தனிமையை உணர்ந்து அவளது மனம் கனத்துப் போகிறது.</p>
+      </div>
+    </article>
+
+    <!-- 17 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">17</span>
+        <h3 class="chapter-title">கனவுலக வாழ்க்கை</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img17.jpg</div>
+        </div>
+        <img src="img17.png" alt="கனவுலக வாழ்க்கை" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">நிகழாமல் போன ஒரு வசந்தத்தின் கற்பனை.</span>
+      <div class="story-prose">
+        <p>இருவரும் ஒன்றாக வாழ்ந்திருந்தால் வாழ்க்கை எப்படி இருந்திருக்கும் என்று பேசத் தொடங்குகிறார்கள். திருமண நாள், சமையல் கேலிகள், குழந்தை என அத்தனை அழகிய தருணங்களையும் கற்பனையாகச் சொல்லிச் சிரிக்கிறார்கள்.</p>
+        <p>அந்தப் புன்னகையின் பின்னால் அடக்க முடியாத சோகம் ஒளிந்திருந்தது. நிகழ்ந்திருக்க வேண்டிய வாழ்க்கை வெறும் கதையாக மட்டுமே எஞ்சிவிட்டதே என்ற வலி மௌனத்தில் கலக்கிறது.</p>
+      </div>
+    </article>
+
+    <!-- 18 -->
+    <article class="chapter-block" data-tone="night">
+      <div class="chapter-header">
+        <span class="chapter-number">18</span>
+        <h3 class="chapter-title">ஒரு தாயின் பாசம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img18.jpg</div>
+        </div>
+        <img src="img18.png" alt="ஒரு தாயின் பாசம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">தீண்டப்படாத காதலின் புனிதமான எல்லைகள்.</span>
+      <div class="story-prose">
+        <p>ராமின் தலைமுடியை மென்மையாகக் கோதி விடுகிறாள் ஜானு. ஒரு தாயைப் போல அவனுக்கு ஆறுதல் சொல்கிறாள்.</p>
+        <p>அவர்கள் காதலை எந்த எல்லை மீறலுக்கும் ஆளாக்கவில்லை. தழுவல்களையும் கடந்த ஓர் ஆன்மாவின் பிணைப்பாகவே நின்றது. ராம் அவளது மடியில் சில நொடிகள் தன் வாழ்வின் பாரங்களை இறக்கி வைத்து இளைப்பாறுகிறான்.</p>
+      </div>
+    </article>
+
+    <!-- 19 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">19</span>
+        <h3 class="chapter-title">புலரும் விடியல்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img19.jpg</div>
+        </div>
+        <img src="img19.png" alt="புலரும் விடியல்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">கனவை கலைக்க வரும் கதிரவனின் கிரணங்கள்.</span>
+      <div class="story-prose">
+        <p>ஜன்னல் வழியே நீல நிற விடியல் எட்டிப் பார்க்கிறது. இரவு முடிந்துவிட்டது என்பதை உணர்த்தும் அந்த முதல் கதிர் இதயங்களில் கனமாக இறங்குகிறது.</p>
+        <p>நிஜ உலகம் தங்களின் கதவை வந்து தட்டத் தொடங்கிவிட்டது என்பதை உணர்ந்து, அமைதியாக விமான நிலையத்திற்குப் புறப்பட ஆயத்தமாகிறார்கள்.</p>
+      </div>
+    </article>
+
+    <!-- 20 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">20</span>
+        <h3 class="chapter-title">விமான நிலையம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img20.jpg</div>
+        </div>
+        <img src="img20.png" alt="விமான நிலையம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">கண்ணீரை மறைக்கும் அமைதியின் விளிம்பு.</span>
+      <div class="story-prose">
+        <p>சென்னை விமான நிலையத்தின் புறப்பாடு முனையம். மக்கள் பரபரப்பாக இயங்க, ராமும் ஜானுவும் ஒரு தனித்தீவாக நிற்கிறார்கள்.</p>
+        <p>"நான் கிளம்புறேன் ராம்..." என்று உதடுகள் துடிக்கச் சொல்கிறாள். "பத்திரமா போயிட்டு வா ஜானு" என்ற ராமின் குரல் நடுங்குகிறது. கண்ணீரை உள்ளுக்குள்ளேயே அடக்கப் போராடுகிறார்கள்.</p>
+      </div>
+    </article>
+
+    <!-- 21 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">21</span>
+        <h3 class="chapter-title">அந்தக் கடைசி அணைப்பு</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img21.jpg</div>
+        </div>
+        <img src="img21.png" alt="அந்தக் கடைசி அணைப்பு" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">ஒரு யுகத்தின் காதலை உள்ளடக்கிய சில நொடிகள்.</span>
+      <div class="story-prose">
+        <p>ஜானு சட்டென அவனை இறுக்கமாக அணைத்துக் கொள்கிறாள். அவளது முகம் அவனது நெஞ்சில் புதைந்து அழுகிறது. ராமின் கைகள் அவளைத் தழுவுகின்றன.</p>
+        <p>அவள் விலகி நடக்கிறாள்; ஒவ்வொரு அடிக்கும் திரும்பிப் பார்க்கிறாள். கண்ணாடி கதவுகள் மூடிக்கொள்ள, ஜானுவின் உருவம் மெதுவாக மறைகிறது.</p>
+      </div>
+    </article>
+
+    <!-- 22 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">22</span>
+        <h3 class="chapter-title">நினைவுப் பெட்டகம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img22.jpg</div>
+        </div>
+        <img src="img22.png" alt="நினைவுப் பெட்டகம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">மஞ்சள் துப்பட்டாவும், உதிராத நினைவுகளும்.</span>
+      <div class="story-prose">
+        <p>அறைக்குத் திரும்பிய ராம் தன் பழைய மரப்பெட்டியைத் திறக்கிறான்.</p>
+        <p>அவள் விட்டுச் சென்ற மஞ்சள் நிறத் துப்பட்டாவை எடுத்து முகர்ந்து பார்க்கிறான். அதில் ஜானுவின் வாசம் இன்னமும் அப்படியே இருந்தது. அதை மடித்து, தன் வாழ்நாளின் ஆகப்பெரும் பொக்கிஷமாக அந்தப் பெட்டிக்குள் பத்திரப்படுத்துகிறான்.</p>
+      </div>
+    </article>
+
+    <!-- 23 -->
+    <article class="chapter-block">
+      <div class="chapter-header">
+        <span class="chapter-number">23</span>
+        <h3 class="chapter-title">முடிவற்ற பயணம்</h3>
+      </div>
+      <div class="cinematic-media">
+        <div class="image-placeholder">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="ph-title">படத்தை இங்கே சேர்க்கவும்</div>
+          <div class="ph-sub">img23.jpg</div>
+        </div>
+        <img src="img23.png" alt="முடிவற்ற பயணம்" loading="lazy" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+      </div>
+      <span class="media-caption">நினைவுகளோடு தொடரும் நாடோடியின் வாழ்க்கை.</span>
+      <div class="story-prose">
+        <p>கேமராவை தோளில் மாட்டிக்கொண்டு வெளியே புறப்படுகிறான் ராமச்சந்திரன். அவனது காலடிகள் மீண்டும் இயற்கையை நோக்கி நகர்கின்றன. ஆனால் இப்போது அவனது தனிமையில் வெறுமை இல்லை; இதயமெங்கும் ஜானகியின் நினைவுகள் சுடராய் எரிகின்றன.</p>
+        <p>சேர்ந்து வாழ்வது மட்டுமே காதலல்ல; அந்த நினைவுகளோடு வாழ்நாள் முழுவதும் வாழ்ந்து முடிப்பதும்கூட காதல்தான். ராமின் பயணம் தொடர்கிறது... எப்போதும் அவளோடு.</p>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Epilogue Section -->
+  <section class="epilogue" id="epilogue">
+    <h3 class="epilogue-title">சில நினைவுகள்...<br>முடிவதில்லை.</h3>
+    <p class="epilogue-prose">
+      காலம் எல்லாவற்றையும் கடந்து சென்றுவிடலாம். மனிதர்கள் விடைபெறலாம், முகவரிகள் மாறலாம், தலைமுடி நரைக்கலாம். ஆனால் சில தருணங்களும், சில மனிதர்களும் நம் ஆன்மாவின் ஆழத்தில் என்றும் அழியாத சுவடுகளாய் நிலைத்து விடுகிறார்கள். அவர்கள் முடிவற்ற ஒரு பாடலைப் போல நம் மௌனங்களில் ஒலித்துக் கொண்டே இருப்பார்கள்.
+    </p>
+    <div class="final-signature">— 96 —</div>
+  </section>
+
+  <!-- Floating Back to Top Button -->
+  <button class="back-to-top" id="btnBackToTop" aria-label="Back to Top">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
+    </svg>
+  </button>
+
+  <script>
+    // --- Canvas Dust Particles ---
+    const canvas = document.getElementById('dustCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 1.5 + 0.4;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = -Math.random() * 0.35 - 0.1;
+        this.alpha = Math.random() * 0.5 + 0.1;
+        this.fadeSpeed = Math.random() * 0.003 + 0.001;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= this.fadeSpeed;
+        if (this.alpha <= 0 || this.y < 0 || this.x < 0 || this.x > width) {
+          this.reset();
+          this.y = height + 10;
+        }
+      }
+      draw() {
+        ctx.fillStyle = `rgba(212, 175, 55, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      resizeCanvas();
+      particles = [];
+      const count = Math.min(Math.floor((width * height) / 20000), 50);
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    initParticles();
+    animateParticles();
+
+    // --- Continuous 8-Track Playlist Player ---
+    const playlist = [
+      'song1.mp3',
+      'song2.mp3',
+      'song3.mp3',
+      'song4.mp3',
+      'song5.mp3',
+      'song6.mp3',
+      'song7.mp3',
+      'song8.mp3'
+    ];
+    let currentTrackIndex = 0;
+    const bgSong = document.getElementById('bgSong');
+
+    function loadTrack(index) {
+      bgSong.src = playlist[index];
+      bgSong.load();
+    }
+
+    function playCurrentTrack() {
+      return bgSong.play();
+    }
+
+    // Sequence to next track after 2-second pause, looping back to 0
+    bgSong.addEventListener('ended', () => {
+      setTimeout(() => {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        loadTrack(currentTrackIndex);
+        playCurrentTrack().catch(() => {});
+      }, 2000);
+    });
+
+    loadTrack(currentTrackIndex);
+
+    // Immediate autoplay or fallback on first user touch/click/scroll
+    function startMusic() {
+      playCurrentTrack().then(() => {
+        removeInteractionListeners();
+      }).catch(() => {
+        // Awaiting user gesture
+      });
+    }
+
+    const interactionEvents = ['touchstart', 'touchend', 'pointerdown', 'click', 'scroll', 'keydown'];
+    interactionEvents.forEach(evt => {
+      window.addEventListener(evt, startMusic, { passive: true });
+    });
+
+    function removeInteractionListeners() {
+      interactionEvents.forEach(evt => {
+        window.removeEventListener(evt, startMusic);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', startMusic);
+
+    // --- Font Size Adjustment ---
+    const btnFontInc = document.getElementById('btnFontInc');
+    const btnFontDec = document.getElementById('btnFontDec');
+    let currentFontSize = 1.15;
+
+    btnFontInc.addEventListener('click', () => {
+      if (currentFontSize < 1.4) {
+        currentFontSize += 0.05;
+        document.documentElement.style.setProperty('--font-base', `${currentFontSize}rem`);
+      }
+    });
+
+    btnFontDec.addEventListener('click', () => {
+      if (currentFontSize > 0.95) {
+        currentFontSize -= 0.05;
+        document.documentElement.style.setProperty('--font-base', `${currentFontSize}rem`);
+      }
+    });
+
+    // --- Theme Switcher ---
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const themes = ['default', 'warm', 'midnight'];
+    let themeIndex = 0;
+
+    btnThemeToggle.addEventListener('click', () => {
+      themeIndex = (themeIndex + 1) % themes.length;
+      const theme = themes[themeIndex];
+      if (theme === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+
+    // --- Scroll Progress Bar & Back to Top ---
+    const progressBar = document.getElementById('progressBar');
+    const btnBackToTop = document.getElementById('btnBackToTop');
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollHeight > 0) {
+        const progress = (scrollTop / scrollHeight) * 100;
+        progressBar.style.width = `${progress}%`;
+      }
+
+      if (scrollTop > 500) {
+        btnBackToTop.classList.add('visible');
+      } else {
+        btnBackToTop.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    btnBackToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // --- Scroll Observer for Fade-Ins ---
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: "0px 0px -40px 0px"
+    });
+
+    document.querySelectorAll('.chapter-block').forEach(block => {
+      observer.observe(block);
+    });
+  </script>
+</body>
+</html>
